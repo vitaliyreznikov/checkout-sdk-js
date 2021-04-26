@@ -1,19 +1,9 @@
-import { getCheckout } from '../../checkout/checkouts.mock';
-
 import CartChangedError from './cart-changed-error';
 
 describe('CartChangedError', () => {
     it('returns error name', () => {
-        const error = new CartChangedError(getCheckout(), {
-            ...getCheckout(),
-            outstandingBalance: 0,
-        });
+        const error = new CartChangedError();
 
         expect(error.name).toEqual('CartChangedError');
-        expect(error.data.previous).toEqual(getCheckout());
-        expect(error.data.updated).toEqual({
-            ...getCheckout(),
-            outstandingBalance: 0,
-        });
     });
 });

@@ -79,10 +79,7 @@ describe('CheckoutValidator', () => {
                 })
                     .catch(errorHandler);
 
-                expect(errorHandler).toHaveBeenCalledWith(new CartChangedError(
-                    getCheckout(),
-                    getCheckout()
-                ));
+                expect(errorHandler).toHaveBeenCalledWith(new CartChangedError());
             });
 
             it('rejects with "cart changed error" if outstandingBalance are different', async () => {
