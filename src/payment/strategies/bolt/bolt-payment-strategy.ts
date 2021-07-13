@@ -43,6 +43,8 @@ export default class BoltPaymentStrategy implements PaymentStrategy {
             const { developerConfig, publishableKey } = paymentMethod.initializationData;
 
             this._boltClient = await this._boltScriptLoader.load(publishableKey, paymentMethod.config.testMode, developerConfig);
+        } else {
+            this._boltClient = await this._boltScriptLoader.load();
         }
 
         return Promise.resolve(this._store.getState());
@@ -130,6 +132,10 @@ export default class BoltPaymentStrategy implements PaymentStrategy {
     private async _executeWithBoltCheckout(payload: OrderRequestBody, _options?: PaymentRequestOptions): Promise<InternalCheckoutSelectors> {
         const { payment, ...order } = payload;
 
+        if (!this._boltClient) {
+            throw new NotInitializedError(NotInitializedErrorType.PaymentNotInitialized);
+        }
+
         if (!payment) {
             throw new PaymentArgumentInvalidError(['payment']);
         }
@@ -144,7 +150,14 @@ export default class BoltPaymentStrategy implements PaymentStrategy {
             throw new MissingDataError(MissingDataErrorType.MissingPayment);
         }
 
-        await this._store.dispatch(this._orderActionCreator.submitOrder(order, _options));
+        const state = await this._store.dispatch(this._orderActionCreator.submitOrder(order, _options));
+
+        const transactionReference = await this._boltClient.getTransactionReference();
+        if (transactionReference === undefined) {
+            return state;
+        }
+        paymentData.nonce = transactionReference;
+
 
         return this._store.dispatch(this._paymentActionCreator.submitPayment({
             methodId,

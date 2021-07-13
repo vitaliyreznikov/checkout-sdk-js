@@ -10,19 +10,21 @@ export default class BoltScriptLoader {
         public _window: BoltHostWindow = window
     ) {}
 
-    async load(publishableKey: string, testMode?: boolean, developerModeParams?: BoltDeveloperModeParams): Promise<BoltCheckout> {
-        const options: LoadScriptOptions = {
-            async: true,
-            attributes: {
-                id: 'bolt-connect',
-                'data-publishable-key': publishableKey,
-            },
-        };
+    async load(publishableKey?: string, testMode?: boolean, developerModeParams?: BoltDeveloperModeParams): Promise<BoltCheckout> {
+        if ( publishableKey !== undefined) {
+            const options: LoadScriptOptions = {
+                async: true,
+                attributes: {
+                    id: 'bolt-connect',
+                    'data-publishable-key': publishableKey,
+                },
+            };
 
-        await Promise.all([
-            this._scriptLoader.loadScript(`//${this.getDomainURL(!!testMode, developerModeParams)}/connect-bigcommerce.js`, options),
-            this._scriptLoader.loadScript(`//${this.getDomainURL(!!testMode, developerModeParams)}/track.js`),
-        ]);
+            await Promise.all([
+                this._scriptLoader.loadScript(`//${this.getDomainURL(!!testMode, developerModeParams)}/connect-bigcommerce.js`, options),
+                this._scriptLoader.loadScript(`//${this.getDomainURL(!!testMode, developerModeParams)}/track.js`),
+            ]);
+        }
 
         if (!this._window.BoltCheckout) {
             throw new PaymentMethodClientUnavailableError();
